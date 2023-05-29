@@ -7,28 +7,37 @@ import (
     "strconv"
 )
 
+// fanIn merges multiple input channels into a single output channel.
+// It reads from the input channels concurrently and sends the received values to the output channel.
+// The function terminates if no values are received from any input channel within the specified timeout.
 func fanIn(input1, input2, input3 <-chan string) <-chan string {
-    c := make(chan string)
-    timeout := time.After(10 * time.Second)
+    // Create a new output channel
+    c := make(chan string)     
+    // Set the timeout duration
+    timeout := time.After(10 * time.Second) 
     go func() {
         for {
             select {
-            case s := <-input1: c<- s
-            case s := <-input2: c<- s
-            case s := <-input3: c<- s
+            case s := <-input1: // Receive a value from input1 channel
+				c <- s          // Send the received value to the output channel
+			case s := <-input2: // Receive a value from input2 channel
+				c <- s          // Send the received value to the output channel
+			case s := <-input3: // Receive a value from input3 channel
+				c <- s          // Send the received value to the output channel
             case <-timeout:
                 fmt.Println("Fan in classifications timeout.")
-                return 
+                return          // Terminate the goroutine
             }
         }
     }()
+    // Return the output channel
     return c
 }
 
 func isPrime(n int) <-chan string {
     c := make(chan string)
     go func() {
-        var is_prime = true
+        is_prime := true
         if n <= 2 || n % 2 == 0 {
             is_prime = false
         } else {
